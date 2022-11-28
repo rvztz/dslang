@@ -145,10 +145,10 @@ Rule 141   get_funcv -> <empty>
 
 Unused terminals:
 
-    DFRAME
+    FOR
     TO
     PLOT
-    FOR
+    DFRAME
 
 Terminals, with rules where they appear:
 

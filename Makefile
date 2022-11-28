@@ -9,7 +9,7 @@ install:
 	pip install -r requirements.txt
 
 test_parser:
-	python tests/test_parser.py
+	python test_parser.py
 
 test_lexer:
-	python tests/test_lexer.py
+	python test_lexer.py
