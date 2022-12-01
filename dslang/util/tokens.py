@@ -18,12 +18,11 @@ class Reserved:
     IF =       "if"
     THEN =     "then"
     ELSE =     "else"
-    FOR =      "for",
-    TO =       "to",
-    WHILE =    "while",
-    DO =       "do",
+    FOR =      "for"
+    TO =       "to"
+    DO =       "do"
     PLOT =     "plot"
-
+    WHILE =    "while"
 
 class Symbols:
     COMMA =    r","
@@ -50,8 +49,9 @@ class Symbols:
     MULT =     r"\*"
     DIV =      r"/"
     EXP =      r"\*\*"
+    FCALL =    r"\$"
 
-    # Símbolos sin regex-formatting   
+    # Símbolos sin escapar el regex-formatting   
     C_LPAREN =   r"("
     C_RPAREN =   r")"
     C_LBRCKT =   r"["
@@ -60,6 +60,7 @@ class Symbols:
     C_ADD    =   r"+"
     C_MULT   =   r"*"
     C_EXP    =   r"**"
+    C_FCALL =    r"$"
 
 
 class Patterns:
@@ -76,6 +77,7 @@ class ExecTok:
     GOSUB = 'gosub'
     PARAM = 'param'
     VERIF = 'verif'
+    BFUNC = 'bfunc'
     ENDFUNC = 'endfunc'
     REFERENCE = 'reference'
     RETFUNC = '___f_ret_'

@@ -17,6 +17,7 @@ class MemHandler:
     SCOPE = {'global':0, 'function':1, 'local':2, 'const':3, 'temporal':4}
     def __init__(self) -> None:
         self.memdir = [[[0, [None] * self.BLOCK_SIZE] for _ in range(len(self.TIDS))] for _ in range(len(self.SCOPE))]
+
     def validate_memblock(self, scope: int, tid: int) -> bool:
         return self.memdir[scope][tid][0] < (self.BLOCK_SIZE)
 
@@ -33,6 +34,7 @@ class MemHandler:
 
     def alloc(self, sid: str, tid: int, size: int = None) -> int:
         scope = self.SCOPE[sid]
+        tid = self.TIDS[tid]
         if not self.validate_memblock(scope, tid):
             raise Exception(f'DSLang error => Memory block full for scope_id/type_id: {scope},{tid}')
         addr = ((scope+1) * 10_000) + ((tid+1)*1_000) + self.memdir[scope][tid][0]
@@ -47,7 +49,7 @@ class MemHandler:
 
     def get_memval(self, addr: int) -> any:
         scope,tid,maddr = self.translate_addr(addr)
-        return self.memdir[scope][tid][1][maddr], 
+        return self.memdir[scope][tid][1][maddr]
 
     def set_memval(self, addr: int, value: any):
         scope,tid,maddr = self.translate_addr(addr)

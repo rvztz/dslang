@@ -10,7 +10,7 @@ class DSLangLexer(Lexer):
         TINT, TFLT, TSTR, DFRAME, TBOOL, TRUE, FALSE,    # Tipos
         VOID,    
 
-        IF, ELSE, FOR, TO, WHILE, DO,                   # Condicional y ciclos
+        IF, ELSE, FOR, TO, WHILE, DO,                  # Condicional y ciclos
 
         AND, OR, EQ, NOTEQ, GT, LT,             # Operadores booleanos
         LTEQ, GTEQ,
@@ -20,11 +20,14 @@ class DSLangLexer(Lexer):
         ID, CTEFLT, CTEINT, CTESTR,                     # Identificador y constantes
 
         COMMA, SCOLON, COLON, LCURL, RCURL,             # Literales
-        LPAREN, RPAREN, LBRCKT, RBRCKT
+        LPAREN, RPAREN, LBRCKT, RBRCKT, FCALL
     }
     ignore = ' \t'
+    ignore_comment = r'\#.*'
+    ignore_newline = r'\n+'
 
-    # TOKEN DEFINITION
+    # NOTE: Definición de tokens
+    SHRT    = Symbols.SHRT
     COMMA   = Symbols.COMMA
     SCOLON  = Symbols.SCOLON
     COLON   = Symbols.COLON
@@ -34,6 +37,7 @@ class DSLangLexer(Lexer):
     RPAREN  = Symbols.RPAREN
     LBRCKT  = Symbols.LBRCKT
     RBRCKT  = Symbols.RBRCKT
+    FCALL   = Symbols.FCALL
 
     ADD     = Symbols.ADD
     SUB     = Symbols.SUB
@@ -42,7 +46,6 @@ class DSLangLexer(Lexer):
     DIV     = Symbols.DIV
 
     EQ      = Symbols.EQ
-    SHRT    = Symbols.SHRT
     ASGN    = Symbols.ASGN
     GTEQ   = Symbols.GTEQ
     GT  = Symbols.GT
@@ -62,6 +65,14 @@ class DSLangLexer(Lexer):
     ID[Reserved.PROGRAM]     = PROGRAM
     ID[Reserved.FUNCTION]    = FUNCTION
     ID[Reserved.MAIN]        = MAIN
+
+    ID[Reserved.IF]          = IF
+    ID[Reserved.ELSE]        = ELSE
+    ID[Reserved.FOR]         = FOR
+    ID[Reserved.TO]          = TO
+    ID[Reserved.WHILE]       = WHILE    
+    ID[Reserved.DO]          = DO
+
     ID[Reserved.VAR]         = VAR
     ID[Reserved.RETURN]      = RETURN
     ID[Reserved.READ]        = READ
@@ -75,7 +86,7 @@ class DSLangLexer(Lexer):
     ID[Reserved.DFRAME]     = DFRAME
     ID[Reserved.VOID]       = VOID
 
-    # HELPER FUNCTIONS
+    # NOTE: Funciones auxiliares
     def CTEFLT(self, t):
         t.value = float(t.value)
         return t

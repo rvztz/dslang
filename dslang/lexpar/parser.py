@@ -1,11 +1,8 @@
 from sly import Parser
+import logging
 from dslang.lexpar.lexer import DSLangLexer
 from dslang.lexpar.ctx import ParsingCtx, ParsingScope
 from dslang.util.tokens import Reserved, Symbols, ExecTok
-import logging
-
-logging.basicConfig(level = logging.DEBUG)
-
 class DSLangParser(Parser):
 
     start = 'program'
@@ -13,22 +10,28 @@ class DSLangParser(Parser):
     ctx = ParsingCtx()
     ptype_to_token = dict(int=Reserved.TINT, float = Reserved.TFLT, 
                         str = Reserved.TSTR, bool= Reserved.TBOOL)
-    debugfile = 'dslang.out'
+    #debugfile = 'dslang.out'
+    log = logging.getLogger(__name__)
+    log.setLevel(logging.CRITICAL)
 
     precedence = (
        ('left', ADD, SUB),
        ('left', MULT, DIV))
 
-    @_('PROGRAM ID add_pid SCOLON programdv')
+    @_('PROGRAM ID add_pid SCOLON progitem')
     def program(self, p):
         return p
 
-    @_('vars programdv',
+    @_('statement programdv',
+        'vars programdv',
         'function programdv',
-        'main programdv',
-        'empty')
-    def programdv(self, p):
+        'main programdv')
+    def progitem(self, p):
         return p
+
+    @_('progitem', 'empty')
+    def programdv(self, p):
+        return p[-1]
 
     @_('MAIN LPAREN RPAREN LCURL maindv')
     def main(self, p):
@@ -45,7 +48,7 @@ class DSLangParser(Parser):
 
     @_('VAR vtype add_cvtype COLON listids SCOLON reset_vtype')
     def vars(self, p):
-        return p   
+        return p
     
     @_('TBOOL','TINT',
         'TFLT', 'TSTR')
@@ -109,36 +112,25 @@ class DSLangParser(Parser):
     def funcstat(self, p):
         return p[0]
 
-    @_('ID validate_fid LPAREN fcallparams RPAREN SCOLON add_curr_pquad',
-        'ID validate_fid LPAREN RPAREN SCOLON add_curr_pquad')
-    def funccall(self, p):
-        return p[0]
-
-    @_('ID ASGN expr add_params fcalltermdv')
-    def fcallparams(self, p):
-        return p[0]
-    
-    @_('COMMA fcallparams')
-    def fcalltermdv(self, p):
-        return p
-    
-    @_('empty')
-    def fcalltermdv(self, p):
-        return p[0]
-
-    @_('expr', 'assign', 'shrtassgn','funccall', 'read', 'pprint', 'cond',
-        'wwhile', 'rreturn')
+    @_('expr', 'assign SCOLON', 'shrtassgn SCOLON','funccall SCOLON', 'read SCOLON', 'pprint SCOLON', 'cond',
+        'wwhile', 'rreturn SCOLON')
     def statement(self, p):
         pass
 
-    @_('bexp AND add_oper expr check_expr_st',
-        'bexp OR add_oper expr check_expr_st')
+    @_('exprdv')
     def expr(self, p):
-        return self.ctx.egen.operand_ctx[-1].pop()
+        expres = p[0]
+        self.ctx.egen.operand_ctx[-1].pop()
+        return expres
+
+    @_('bexp AND add_oper exprdv check_expr_st',
+        'bexp OR add_oper exprdv check_expr_st')
+    def exprdv(self, p):
+        return self.ctx.egen.operand_ctx[-1][-1]
     
     @_('bexp check_expr_st')
-    def expr(self, p):
-        return self.ctx.egen.operand_ctx[-1].pop()
+    def exprdv(self, p):
+        return self.ctx.egen.operand_ctx[-1][-1]
 
     @_('asexp LT add_oper bexp check_bexp_st',
         'asexp GT add_oper bexp check_bexp_st',
@@ -172,19 +164,22 @@ class DSLangParser(Parser):
     def emdexp(self, p):
         return p
     
-    @_('LPAREN push_oper_ctx expr RPAREN pop_oper_ctx')
+    @_('LPAREN push_oper_ctx exprdv RPAREN pop_oper_ctx')
     def pexp(self, p):
         return p
     
-    @_('valcall')
+    @_('const save_const',
+        'ID add_vid',
+        'varidx add_vidx',
+        'funccall add_funcv')
     def pexp(self, p):
         return p
 
-    @_('ID ASGN expr gen_assign SCOLON')
+    @_('ID ASGN expr gen_assign')
     def assign(self, p):
         return p
-    
-    @_('varidx add_vidx ASGN expr gen_idx_assign SCOLON')
+
+    @_('varidx add_vidx ASGN expr gen_idx_assign')
     def assign(self, p):
         return p
 
@@ -192,12 +187,28 @@ class DSLangParser(Parser):
     def shrtassgn(self, p):
         return p
 
-    @_('READ LPAREN ID RPAREN gen_read SCOLON', 
-        'READ LPAREN varidx add_vidx gen_idxread RPAREN SCOLON')
+    @_('ID FCALL LPAREN validate_fid fcallparams RPAREN add_curr_pquad')
+    def funccall(self, p):
+        return p[0]
+
+    @_('fcallterm fcallparamdv', 'empty')
+    def fcallparams(self, p):
+        return p[0]
+
+    @_('COMMA fcallparams', 'empty')
+    def fcallparamdv(self, p):
+        pass
+
+    @_('ID ASGN expr add_params')
+    def fcallterm(self, p):
+        return p[0]
+
+    @_('READ LPAREN ID RPAREN gen_read', 
+        'READ LPAREN varidx add_vidx gen_idxread RPAREN')
     def read(self, p):
         return p
     
-    @_('PRINT LPAREN printlist RPAREN SCOLON gen_print_quads')
+    @_('PRINT LPAREN printlist RPAREN gen_print_quads')
     def pprint(self, p):
         return p
 
@@ -219,23 +230,27 @@ class DSLangParser(Parser):
     def printerm(self, p):
         return p
 
-    @_('IF LPAREN expr RPAREN gen_cond_quad LBRCKT condv add_jquad')
+    @_('IF LPAREN expr RPAREN LCURL gen_cond_quad condst RCURL add_jquad')
     def cond(self, p):
         return p
 
-    @_('IF LPAREN expr RPAREN gen_cond_quad LBRCKT condv gen_egoto ELSE LBRCKT condv add_jquad')
+    @_('IF LPAREN expr RPAREN LCURL gen_cond_quad condst RCURL gen_egoto ELSE LCURL condst RCURL add_jquad')
     def cond(self, p):
         return p
 
-    @_('statement condv')
-    def condv(self, p):
+    @_('statement condstdv')
+    def condst(self, p):
         return p
 
-    @_('RBRCKT')
-    def condv(self, p):
+    @_('condst')
+    def condstdv(self, p):
+        return p 
+
+    @_('empty')
+    def condstdv(self, p):
         return p
 
-    @_('WHILE add_wpquad LPAREN expr RPAREN gen_wquad DO LBRCKT whiledv add_wquad')
+    @_('WHILE add_wpquad LPAREN expr RPAREN gen_wquad DO LCURL whiledv add_wquad')
     def wwhile(self, p):
         return p
 
@@ -243,7 +258,7 @@ class DSLangParser(Parser):
     def whiledv(self, p):
         return p
 
-    @_('RBRCKT')
+    @_('RCURL')
     def whiledv(self, p):
         return p
 
@@ -259,29 +274,18 @@ class DSLangParser(Parser):
     # def fordv(self, p):
     #     return p
 
-    @_('RETURN expr SCOLON check_return')
+    @_('RETURN expr check_return')
     def rreturn(self, p):
         return p
-    
-    @_('const save_const', 
-        'varid add_vid',
-        'varidx add_vidx',
-        'funccall get_funcv')
-    def valcall(self, p):
-        return p[-1]
 
     @_('TRUE', 'FALSE', 'CTEFLT',
         'CTEINT', 'CTESTR')
     def const(self, p):
         return p[-1]
-
-    @_('ID')
-    def varid(self, p):
-        return p[0]
         
     @_('ID LBRCKT validate_arr expr RBRCKT gen_vdim arrindex')
     def varidx(self, p):
-        pass
+        return p[0]
 
     @_('LBRCKT expr RBRCKT gen_vdim arrindex')
     def arrindex(self, p):
@@ -291,15 +295,15 @@ class DSLangParser(Parser):
     def arrindex(self, p):
         pass
 
-    # NOTE: empty production
+    # NOTE:Producción vacía
     @_('')
     def empty(self, p):
         pass
     
-    # NOTE: neuralgic point definition
+    # NOTE: Definición de puntos neurálgicos
     @_('')
     def add_pid(self, p):
-        if pid := self.ctx.p_id:
+        if (pid := self.ctx.p_id):
             raise SystemExit(f'DSLang error => Existing pid: {pid}.')
         self.ctx.funcdir.add(f'___pid_{p[-1]}', Reserved.VOID, True)
         self.ctx.add_fctx(f'___pid_{p[-1]}')
@@ -317,7 +321,7 @@ class DSLangParser(Parser):
     @_('')
     def store_varid(self, p):
         try:
-            addr = self.ctx.mem.alloc(self.ctx.curr_pscope, self.ctx.mtid)
+            addr = self.ctx.mem.alloc(self.ctx.curr_pscope, self.ctx.curr_vtype)
             self.ctx.add_var(p[-1], self.ctx.curr_vtype, addr)
         except Exception as e:
             raise SystemExit('DSLang error => ', e)
@@ -343,7 +347,7 @@ class DSLangParser(Parser):
         try:
             var = self.ctx.get_var(self.ctx.curr_vid)
             var.set_mdim()
-            addr = self.ctx.mem.alloc(self.ctx.curr_pscope, self.ctx.mtid, var.size)
+            addr = self.ctx.mem.alloc(self.ctx.curr_pscope, self.ctx.curr_vtype, var.size)
             self.ctx.update_var(self.ctx.curr_vid, addr = addr)
             self.ctx.curr_vid = ''
         except Exception as e:
@@ -359,7 +363,7 @@ class DSLangParser(Parser):
             self.ctx.egen.add_operand(const_addr, const_type)
             return const_addr, const_type
         else:
-            addr = self.ctx.mem.alloc('const', self.ctx.mem.TIDS[const_type])
+            addr = self.ctx.mem.alloc('const', const_type)
             self.ctx.mem.set_memval(addr, val)
             self.ctx.consts.add(const_type, val, addr)
             self.ctx.egen.add_operand(addr, const_type)
@@ -380,7 +384,7 @@ class DSLangParser(Parser):
             self.ctx.curr_vid = p[-2]
             var = self.ctx.get_var(self.ctx.curr_vid)
             if not (var.is_array):
-                raise Exception('IndexErro :: Invalid indexing for non-array variable')
+                raise Exception('IndexError :: Indexing for non-array variable')
         except Exception as e:
             raise SystemExit('DSLang error => ', e)
 
@@ -400,7 +404,7 @@ class DSLangParser(Parser):
                 self.ctx.curr_dim += 1
                 self.ctx.idx_agg.append(exp_res['pid'])
             else:
-                taddr = self.ctx.mem.alloc('temporal', self.ctx.mem.TIDS.get(Reserved.TINT))
+                taddr = self.ctx.mem.alloc('temporal', Reserved.TINT)
                 self.ctx.add_quad(Symbols.C_MULT, exp_res['pid'], limits[2], taddr, None, literal = ['r'])
                 self.ctx.curr_dim += 1
                 self.ctx.idx_agg.append(taddr)
@@ -412,13 +416,13 @@ class DSLangParser(Parser):
         try:
             while len(self.ctx.idx_agg) > 1:
                 l,r = self.ctx.idx_agg.popleft(), self.ctx.idx_agg.popleft()
-                taddr = self.ctx.mem.alloc('temporal', self.ctx.mem.TIDS.get(Reserved.TINT))
+                taddr = self.ctx.mem.alloc('temporal', Reserved.TINT)
                 self.ctx.idx_agg.appendleft(taddr)
                 self.ctx.add_quad(Symbols.C_ADD, l, r, taddr)
             ref = self.ctx.idx_agg.pop()
             var = self.ctx.get_var(self.ctx.curr_vid)
-            taddr = self.ctx.mem.alloc('temporal', self.ctx.mem.TIDS.get(Reserved.TINT))
-            self.ctx.add_quad(Symbols.C_ADD, ref, var.addr, taddr)
+            taddr = self.ctx.mem.alloc('temporal', Reserved.TINT)
+            self.ctx.add_quad(Symbols.C_ADD, ref, var.addr, taddr, None, literal = ['r'])
             self.ctx.egen.add_operand(taddr,var.vtype,True)
             self.ctx.curr_dim = 1
             self.ctx.curr_vid = ''
@@ -474,10 +478,9 @@ class DSLangParser(Parser):
     @_('')
     def gen_idx_assign(self, p):
         try:
-            idx = self.egen.curr_operand_st.pop()
-            idx = self.ctx.deref_oper(idx)
+            idx = self.ctx.egen.curr_operand_st.pop()
             exp_res = p[-1]
-            self.ctx.add_quad(Symbols.ASGN, None, exp_res['pid'], idx['pid'])
+            self.ctx.add_quad(Symbols.ASGN, None, exp_res['pid'], idx['pid'], deref=['v'])
         except Exception as e:
             raise SystemExit('DSLang error => ', e)
 
@@ -504,9 +507,8 @@ class DSLangParser(Parser):
     @_('')
     def gen_idxread(self, p):
         try:
-            idx = self.egen.curr_operand_st.pop()
-            idx = self.ctx.deref_oper(idx)
-            self.ctx.add_quad(p[-4], None, None, idx['pid'])
+            idx = self.ctx.egen.curr_operand_st.pop()
+            self.ctx.add_quad(p[-4], None, None, idx['pid'], deref=['v'])
         except Exception as e:
             raise SystemExit('DSLang error => ', e)
 
@@ -521,8 +523,7 @@ class DSLangParser(Parser):
     @_('')
     def push_printidl(self, p):
         try:
-            idx = self.egen.curr_operand_st.pop()
-            idx = self.ctx.deref_oper(idx)
+            idx = self.ctx.egen.curr_operand_st.pop()
             self.ctx.print_items.append(idx['pid'])
         except Exception as e:
             raise SystemExit('DSLang error => ', e)
@@ -535,7 +536,7 @@ class DSLangParser(Parser):
             if const_addr := self.ctx.consts.get(const_type, const):
                 self.ctx.print_items.append(const_addr)
             else:
-                addr = self.ctx.mem.alloc('const', self.ctx.mem.TIDS[const_type])
+                addr = self.ctx.mem.alloc('const', const_type)
                 self.ctx.mem.set_memval(addr, const)
                 self.ctx.consts.add(const_type, const, addr)
                 self.ctx.print_items.append(addr)
@@ -549,11 +550,11 @@ class DSLangParser(Parser):
     @_('')
     def gen_cond_quad(self, p):
         try:
-            exp_res = p[-2]
+            exp_res = p[-3]
             if exp_res['ptype'] != Reserved.TBOOL:
-                raise Exception('TypeError :: Conditional expression should be of type: ', {Reserved.TBOOL})
+                raise Exception(f'TypeError :: Conditional expression should be of type: {Reserved.TBOOL}')
             self.ctx.add_quad(ExecTok.GOTOF, None, exp_res['pid'], None)
-            self.ctx.add_pquad(self.ctx.curr_qidx)
+            self.ctx.add_pquad(self.ctx.curr_qidx-1)
             self.ctx.set_pscope(ParsingScope.LOCAL)
         except Exception as e:
             raise SystemExit('DSLang error => ', e)
@@ -561,30 +562,30 @@ class DSLangParser(Parser):
     @_('')
     def add_jquad(self, p):
         goto_idx = self.ctx.pop_pquad()
-        self.ctx.update_quad(goto_idx, v=self.ctx.curr_qidx+1)
+        self.ctx.update_quad(goto_idx, v=self.ctx.curr_qidx)
         self.ctx.reset_pscope()
 
     @_('')
     def gen_egoto(self, p):
         goto_idx = self.ctx.pop_pquad()
         self.ctx.add_quad(ExecTok.GOTO, None, None, None)
-        self.ctx.update_quad(goto_idx, v=self.ctx.curr_qidx+1)
-        self.ctx.add_pquad(self.ctx.curr_qidx)
+        self.ctx.update_quad(goto_idx, v=self.ctx.curr_qidx)
+        self.ctx.add_pquad(self.ctx.curr_qidx-1)
         self.ctx.reset_pscope()
         self.ctx.set_pscope(ParsingScope.LOCAL)
 
     @_('')
     def add_wpquad(self, p):
-        self.ctx.add_pquad(self.ctx.curr_qidx+1)
+        self.ctx.add_pquad(self.ctx.curr_qidx)
 
     @_('')
     def gen_wquad(self, p):
         try:
             exp_res = p[-2]
             if exp_res['ptype'] != Reserved.TBOOL:
-                raise Exception('TypeError :: Loop expression should be of type: ', {Reserved.TBOOL})
+                raise Exception(f'TypeError :: Loop expression should be of type: {Reserved.TBOOL}')
             self.ctx.add_quad(ExecTok.GOTOF, None, exp_res['pid'], None)
-            self.ctx.add_pquad(self.ctx.curr_qidx)
+            self.ctx.add_pquad(self.ctx.curr_qidx-1)
             self.ctx.set_pscope(ParsingScope.LOCAL)
         except Exception as e:
             raise SystemExit('DSLang error => ', e)
@@ -594,18 +595,19 @@ class DSLangParser(Parser):
         idx_gotof = self.ctx.pop_pquad()
         idx_goto = self.ctx.pop_pquad()
         self.ctx.add_quad(ExecTok.GOTO, None, None, idx_goto)
-        self.ctx.update_quad(idx_gotof, v=self.ctx.curr_qidx+1)
+        self.ctx.update_quad(idx_gotof, v=self.ctx.curr_qidx)
         self.ctx.reset_pscope()
 
     @_('') 
     def save_func(self, p):
         try:
-            fid = p[-1]
             ftype = p[-2]
-            funcid = ExecTok.RETFUNC + fid
+            funcid = ExecTok.RETFUNC + p[-1]
             if ftype != Reserved.VOID:
-                addr = self.ctx.mem.alloc(self.ctx.curr_pscope, self.ctx.mem.TIDS.get[ftype])
-                self.ctx.funcdir.get(self.ctx.p_id).vtab.add(funcid, ftype, addr)
+                addr = self.ctx.mem.alloc(self.ctx.curr_pscope, ftype)
+                self.ctx.p_func.vtab.add(funcid, ftype, addr)
+            self.ctx.add_pquad(self.ctx.curr_qidx)
+            self.ctx.add_quad(ExecTok.BFUNC, None, None, None)
             self.ctx.funcdir.add(funcid, ftype, False)
             self.ctx.add_fctx(funcid)
             self.ctx.set_pscope(ParsingScope.FUNCTION)
@@ -619,7 +621,7 @@ class DSLangParser(Parser):
                 raise Exception('SyntaxError :: Param definition outside of function')
             varid = p[-1]
             vtype = p[-2]
-            addr = self.ctx.mem.alloc('function', self.ctx.mem.TIDS[p[-1]])
+            addr = self.ctx.mem.alloc('function', vtype)
             self.ctx.curr_func.params.add(varid,vtype, addr)
         except Exception as e:
             raise SystemExit('DSLang error => ', e)
@@ -631,31 +633,46 @@ class DSLangParser(Parser):
     @_('')
     def check_return(self, p):
         exp_res = p[-2]
-        fvar = self.ctx.funcdir.get(self.ctx.p_id).vtab.get(self.ctx.curr_fctx)
+        fvar = self.ctx.p_func.vtab.get(self.ctx.curr_fctx)
         if fvar.vtype != exp_res['ptype']:
             raise Exception('TypeError :: Expression return should match function value')
         self.ctx.add_quad(Symbols.ASGN, None, exp_res['pid'], fvar.addr)
 
     @_('')
     def remove_fscope(self, p):
+        self.ctx.reset_pscope()
         self.ctx.pop_fctx()
+        idx_bfunc = self.ctx.pop_pquad()
         self.ctx.add_quad(ExecTok.ENDFUNC, None, None, None)
+        self.ctx.update_quad(idx_bfunc, v=self.ctx.curr_qidx-1)
         #self.ctx.clean_function_mem()
 
 
     @_('')
     def validate_fid(self, p):
         try:
-            fid = p[-1]
-            _ = self.ctx.funcdir.get(fid)
-            self.ctx.add_fctx(fid)
+            fid = ExecTok.RETFUNC + p[-3]
+            func = self.ctx.funcdir.get(fid)
+            self.ctx.curr_fid = fid
+        except Exception as e:
+            raise SystemExit('DSLang error => ', e)
+
+    @_('')
+    def add_funcv(self, p):
+        try:
+            fid = ExecTok.RETFUNC + p[-1]
+            fvar = self.ctx.p_func.vtab.get(fid)
+            if fvar.vtype == Reserved.VOID:
+                raise Exception('TypeError :: Non-returnable function called as term')
+            self.ctx.egen.add_operand(fvar.addr, fvar.vtype)
+            return fvar.addr, fvar.vtype
         except Exception as e:
             raise SystemExit('DSLang error => ', e)
 
     @_('')
     def add_params(self, p):
         try:
-            param = self.ctx.curr_func.params.get(p[-3])
+            param = self.ctx.funcdir.get(self.ctx.curr_fid).params.get(p[-3])
             if not param:
                 raise Exception('SyntaxError :: invalid function parma')
             exp_res = p[-1]
@@ -665,13 +682,6 @@ class DSLangParser(Parser):
 
     @_('')
     def add_curr_pquad(self, p):
-        self.ctx.add_quad(ExecTok.GOSUB, None, self.ctx.curr_fctx, self.ctx.curr_qidx+1)
-
-    @_('')
-    def get_funcv(self, p):
-        try:
-            var = self.ctx.get_var(p[-1])
-            self.ctx.egen.add_operand(var.addr, var.vtype)
-            return var.addr, var.vtype
-        except Exception as e:
-            raise SystemExit('DSLang error => ', e)           
+        fvar = self.ctx.funcdir.get(self.ctx.curr_fid)
+        self.ctx.add_quad(ExecTok.GOSUB, None, fvar.qaddr, self.ctx.curr_qidx+2)
+        self.ctx.curr_fid = ''

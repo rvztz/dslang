@@ -13,9 +13,17 @@ class Quad:
         self.v = value
         self.deref = deref
         self.literal = literal
-
+    s = '    '
     def __repr__(self) -> str:
-        return f'{self.o} | {self.l} | {self.r} | {self.v}'
+        return f'{self.o}{self.padop(self.o,10)}| {self.l}{self.padv(self.l)}| {self.r}{self.padv(self.r)}| {self.v}{self.padv(self.v)}'
+
+    def padop(self, s,t):
+        return ''.join([' ' for _ in range(t-len(s))])
+    
+    def padv(self, v):
+        if not v:
+            return "  "
+        return "     " if v < 10_000 else " "
 
 class ExprHelper:
 
@@ -55,6 +63,7 @@ class ParsingCtx:
     p_id: str = ''
     curr_vtype: str = ''
     curr_vid: str = ''
+    curr_fid: str = ''
     curr_qidx : int = 0
     curr_dim: int = 1
 
@@ -80,12 +89,12 @@ class ParsingCtx:
         return self.pscope[-1]
     
     @property
-    def curr_func(self):
-        return self.funcdir.get(self.curr_fctx)
+    def p_func(self):
+        return self.funcdir.get(self.p_id)
 
     @property
-    def mtid(self):
-        return self.mem.TIDS.get(self.curr_vtype)
+    def curr_func(self):
+        return self.funcdir.get(self.curr_fctx)
 
     @property
     def toperator(self):
@@ -95,7 +104,7 @@ class ParsingCtx:
     
     def add_quad(self, op, l, r, v, deref = None, literal = None):
         self.quads.append(Quad(op, l, r, v, deref, literal))
-        self.curr_qidx = len(self.quads)-1
+        self.curr_qidx += 1
 
     def update_quad(self, idx, **kwargs):
         quad = self.quads[idx]
@@ -133,7 +142,7 @@ class ParsingCtx:
     
     def add_var(self, varid: str, vtype: str, addr: int, lims: list = None):
         if self.curr_pscope == ParsingScope.GLOBAL:
-            self.funcdir.get(self.p_id).vtab.add(varid, vtype, addr, lims)
+            self.p_func.vtab.add(varid, vtype, addr, lims)
         elif self.curr_pscope == ParsingScope.FUNCTION:
             self.curr_func.vtab.add(varid, vtype, addr, lims)
         elif self.curr_pscope == ParsingScope.LOCAL:
@@ -141,7 +150,7 @@ class ParsingCtx:
 
     def update_var(self, varid: str, **kwargs):
         if self.curr_pscope == ParsingScope.GLOBAL:
-            self.funcdir.get(self.p_id).vtab.update(varid, **kwargs)
+            self.p_func.vtab.update(varid, **kwargs)
         elif self.curr_pscope == ParsingScope.FUNCTION:
             self.curr_func.vtab.update(varid, **kwargs)
         elif self.curr_pscope == ParsingScope.LOCAL:
@@ -149,32 +158,23 @@ class ParsingCtx:
 
     def get_var(self, varid):
         if self.curr_pscope == ParsingScope.GLOBAL:
-            glb = self.funcdir.get(self.p_id).vtab.get(varid)
+            glb = self.p_func.vtab.get(varid)
             var = glb
         else:
             var = self.curr_func.get_var(varid)
-            glb = self.funcdir.get(self.p_id).vtab.get(varid)
+            glb = self.p_func.vtab.get(varid)
             var = var or glb
         if var:
             return var
-        raise Exception('VarID Error :: variable not declared')
-
-
-    def deref_oper(self, oper):
-        if oper['ref'] == False:
-            return oper
-        return dict(pid=self.mem.get_memval(oper['pid']), ptype=oper['ptype'])
-
+        raise Exception(f'VarID Error :: variable <{varid}> not declared')
 
     def gen_expr(self):
         roper, loper = self.egen.curr_operand_st.pop(), self.egen.curr_operand_st.pop()
-        roper, loper = self.deref_oper(roper), self.deref_oper(loper) 
         operator = self.egen.curr_operator_st.pop()
         oper_type = self.scube.get(loper['ptype'], roper['ptype'], operator)
         if not oper_type:
             raise Exception(f'TypeError :: operation {operator} not allowed between types {loper["ptype"]}-{roper["ptype"]}')
-        print(f'expr: = {loper["pid"]} || ', operator, f' || {roper["pid"]}')
-        taddr = self.mem.alloc('temporal', self.mem.TIDS.get(oper_type))
+        taddr = self.mem.alloc('temporal',oper_type)
         self.add_quad(operator, loper['pid'], roper['pid'], taddr)
         self.egen.add_operand(taddr, oper_type)
         #self.cleanup_tmem([loper['pid'], roper['pid']])

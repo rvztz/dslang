@@ -1,13 +1,13 @@
 from dslang.util.tokens import Reserved, Symbols
 
-## NOTE: Type definition
+## NOTE: Definición de tipos
 INT     = Reserved.TINT
 BOOL    = Reserved.TBOOL
 FLOAT   = Reserved.TFLT
 STRING  = Reserved.TSTR
 ERROR   = None
 
-## NOTE: INT DEFINITION
+## NOTE: Asociación para INT
 INT_INT_ASSOC = {
     Symbols.C_EXP:  INT,
     Symbols.DIV:  INT,
@@ -95,7 +95,7 @@ INT_ASSOC = {INT:INT_INT_ASSOC, FLOAT:INT_FLOAT_ASSOC,
 
 
 
-## NOTE: FLOAT DEFINITION
+## NOTE: Asociación para FLOAT
 FLOAT_FLOAT_ASSOC = {
     Symbols.C_EXP:  FLOAT,
     Symbols.DIV:  FLOAT,
@@ -181,7 +181,7 @@ FLOAT_STR_ASSOC = {
 FLOAT_ASSOC = {INT:FLOAT_INT_ASSOC, FLOAT:FLOAT_FLOAT_ASSOC, 
             BOOL:FLOAT_BOOL_ASSOC, STRING:FLOAT_STR_ASSOC}
 
-## NOTE: CHAR DEFINITION
+## NOTE: Asociación para STR
 
 STR_STR_ASSOC = {
     Symbols.C_EXP:  ERROR,
@@ -267,7 +267,7 @@ STR_ASSOC = {INT:STR_INT_ASSOC, FLOAT:STR_FLOAT_ASSOC,
             BOOL:STR_BOOL_ASSOC, STRING:STR_STR_ASSOC}
 
 
-## NOTE: BOOL DEFINITION
+## NOTE: Asociación para BOOL
 
 BOOL_BOOL_ASSOC = {
     Symbols.C_EXP:  ERROR,
@@ -353,7 +353,7 @@ BOOL_ASSOC = {INT:BOOL_INT_ASSOC, FLOAT:BOOL_FLOAT_ASSOC,
             BOOL:BOOL_BOOL_ASSOC, STRING:BOOL_STR_ASSOC}
 
 
-# NOTE: SEMANTIC CUBE DEFINITION
+# NOTE: Cubo semántico
 CAYER_ASSOC = {
     INT: INT_ASSOC,
     FLOAT: FLOAT_ASSOC,
