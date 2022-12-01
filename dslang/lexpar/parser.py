@@ -516,7 +516,7 @@ class DSLangParser(Parser):
     def push_printid(self, p):
         try:
             var = self.ctx.get_var(p[-1])
-            self.ctx.print_items.append(var.addr)
+            self.ctx.print_items.append([var.addr, False])
         except Exception as e:
             raise SystemExit('DSLang error => ', e)
 
@@ -524,7 +524,7 @@ class DSLangParser(Parser):
     def push_printidl(self, p):
         try:
             idx = self.ctx.egen.curr_operand_st.pop()
-            self.ctx.print_items.append(idx['pid'])
+            self.ctx.print_items.append([idx['pid'], True])
         except Exception as e:
             raise SystemExit('DSLang error => ', e)
 
@@ -534,12 +534,12 @@ class DSLangParser(Parser):
             const = p[-1]
             const_type = self.ptype_to_token.get(type(const).__name__, None)
             if const_addr := self.ctx.consts.get(const_type, const):
-                self.ctx.print_items.append(const_addr)
+                self.ctx.print_items.append([const_addr, False])
             else:
                 addr = self.ctx.mem.alloc('const', const_type)
                 self.ctx.mem.set_memval(addr, const)
                 self.ctx.consts.add(const_type, const, addr)
-                self.ctx.print_items.append(addr)
+                self.ctx.print_items.append([addr, False])
         except Exception as e:
             raise SystemExit('DSLang error => ', e)
 
@@ -632,7 +632,7 @@ class DSLangParser(Parser):
 
     @_('')
     def check_return(self, p):
-        exp_res = p[-2]
+        exp_res = p[-1]
         fvar = self.ctx.p_func.vtab.get(self.ctx.curr_fctx)
         if fvar.vtype != exp_res['ptype']:
             raise Exception('TypeError :: Expression return should match function value')

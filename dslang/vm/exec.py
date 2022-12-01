@@ -89,6 +89,9 @@ class QuadExecutor:
 
     def write(self, q: Quad):
         val = self.mem.get_memval(q.v)
+        print(q.deref)
+        if q.deref:
+            val = self.mem.get_memval(val)
         print(f'|> {val}')
         self.qidx += 1
 
@@ -96,7 +99,7 @@ class QuadExecutor:
         val = self.mem.get_memval(q.r)
         if q.deref:
             addr = self.mem.get_memval(q.v)
-            self.mem.set_memval(addr, q.r)
+            self.mem.set_memval(addr, val)
         else:
             self.mem.set_memval(q.v, val)
         self.qidx += 1

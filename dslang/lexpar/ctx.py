@@ -180,8 +180,9 @@ class ParsingCtx:
         #self.cleanup_tmem([loper['pid'], roper['pid']])
 
     def gen_print_quads(self):
-        for addr in self.print_items:
-            self.add_quad(Reserved.PRINT, None, None, addr)
+        for addr,deref in self.print_items:
+            dref = ['v'] if deref else None
+            self.add_quad(Reserved.PRINT, None, None, addr, dref)
         self.print_items.clear()
 
     def clean_function_mem(self):

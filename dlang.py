@@ -4,14 +4,13 @@ from dslang.lexpar.lexer import DSLangLexer
 from dslang.lexpar.parser import DSLangParser
 from dslang.vm.exec import QuadExecutor
 
-lexer = DSLangLexer()
-parser = DSLangParser()
-
-
 def format_qidx(i):
     return f'{i}{"".join([" " for x in range(6-len(str(i)))])}::'
 
 def tokenize(st, debug):
+    lexer = DSLangLexer()
+    parser = DSLangParser()
+
     toks = lexer.tokenize(st)
     res = parser.parse(toks)
     if debug:
@@ -33,6 +32,6 @@ if __name__ == '__main__':
     debug = False
     if len(sys.argv) > 2:
         debug = (sys.argv[2] == '--debug')
-    f = open('test.dslang', 'r')
+    f = open(filepath, 'r')
     f = ''.join(f.read())
     tokenize(f, debug)
