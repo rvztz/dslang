@@ -25,7 +25,6 @@ class QuadExecutor:
         self.mem = mem
         self.quads = quads
         self.pjumps = deque()
-        self.pfunc = deque()
         self.qidx = 0
 
     def getmv(self, addr: any) -> any:
@@ -80,19 +79,11 @@ class QuadExecutor:
         self.qidx = v if r else self.qidx + 1
 
     def gosub(self, l, r, v):
-        for pr,pv in self.pfunc[-1]: 
-            print(pv,'=',pr)
-            self.mem.set_memval(pv,pr)
-        self.pfunc.append([])
         self.pjumps.append(v)
         self.qidx = r
 
     def param(self, l, r, v):
-        if not self.pfunc:
-            self.pfunc.append([])
-        self.pfunc[-1].append([r,v])
-        self.qidx += 1
-        #self.assign(l,r,v)
+        self.assign(l,r,v)
 
     def verif(self, l, r, v):
         if not (r <= l < v):
@@ -103,20 +94,12 @@ class QuadExecutor:
         return self.goto(l,r,v)
 
     def endfunc(self, l, r, v):
-        if len(self.pfunc) > 1:
-            for pr,pv in self.pfunc[-1]: 
-                print(pv,'=',pr)
-                self.mem.set_memval(pv,pr)
-
         if len(self.pjumps) > 1:
             self.qidx = self.pjumps.pop()
         else:
             self.qidx += 1
 
     def retfunc(self, l, r, v):
-        self.pfunc.pop()
-        if len(self.pfunc) > 2:
-            self.pfunc.pop()
         self.mem.set_memval(v, r)
         self.endfunc(l,r,v)
 
