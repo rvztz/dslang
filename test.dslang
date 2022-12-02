@@ -1,0 +1,23 @@
+program notest;
+var int: i,j;
+#i=2+2;
+#j=i*2;
+
+func void myfunc(int a, int b) {
+    if(a > b) {
+        write('a');
+    } else {
+        write('b');
+
+    }
+}
+
+func int fs(int x, int y) {
+    sssa := x;
+    write(sssa);
+    return x*y;
+}
+
+i = fs$(4, 2);
+write(i);
+#myfunc$(4, 2);
