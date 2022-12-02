@@ -13,6 +13,7 @@ class QuadExecutor:
         Symbols.GT: lambda x,y: x > y,
         Symbols.LTEQ: lambda x,y: x <= y,
         Symbols.GTEQ: lambda x,y: x >= y,
+        Symbols.EQ: lambda x,y: x == y,
         Symbols.C_ADD: lambda x,y: x + y,
         Symbols.SUB: lambda x,y: x - y,
         Symbols.C_EXP: lambda x,y: x ** y,
@@ -24,82 +25,110 @@ class QuadExecutor:
         self.mem = mem
         self.quads = quads
         self.pjumps = deque()
+        self.pfunc = deque()
         self.qidx = 0
+
+    def getmv(self, addr: any) -> any:
+        if type(addr).__name__ == 'int':
+            val = self.mem.get_memval(addr)
+            if type(val).__name__ == 'Reference':
+                return self.mem.get_memval(val.v)
+            return val
+        return self.getmv(addr.v)
+
+    def getlt(self, val: any) -> any:
+        if val:
+            return val.v
+        return val
+
+    def getvq(self, q: Quad):
+        ql = self.getmv if type(q.l).__name__ in {'int', 'Reference'} else self.getlt 
+        qr = self.getmv if type(q.r).__name__ in {'int', 'Reference'} else self.getlt
+        qv = self.getmv if type(q.v).__name__ in {'int', 'Reference'} else self.getlt
+        return ql(q.l), qr(q.r), qv(q.v)
 
     def exec_quads(self):
         while self.qidx < len(self.quads):
             currq = self.quads[self.qidx]
+            l,r,v = self.getvq(currq)
+            print(self.qidx, currq)
+            #print(l,r,v)
+            print('----------------')
             if currq.o == Symbols.ASGN:
-                self.assign(currq)
+                self.assign(l,r,v)
             elif op := self.operations.get(currq.o, None):
-                val = self.mem.get_memval(currq.l)
-                var = self.mem.get_memval(currq.r)
-                if currq.literal:
-                    res = op(val, currq.r)
-                else: 
-                    res = op(val, var)
-                self.mem.set_memval(currq.v, res)
+                res = op(l, r)
+                if currq.o == Symbols.C_MULT:
+                    print(currq.o, l, r, res)
+                    print('---------------------')
+                self.mem.set_memval(v, res)
                 self.qidx += 1
             elif op := getattr(self, currq.o, None):
-                op(currq)
+                op(l,r,v)
             else:
                 raise SystemExit('ExecError :: Unsupported op')
     
-    def goto(self, q: Quad):
-        self.qidx = q.v
+    def goto(self, l, r, v):
+        self.qidx = v
 
-    def gotof(self, q: Quad):
-        val = self.mem.get_memval(q.r)
-        self.qidx = q.v if (not val) else self.qidx + 1
+    def gotof(self, l, r, v):
+        if r is None:
+            raise SystemExit('Undefined.')
+        self.qidx = v if (not r) else self.qidx + 1
 
-    def gotov(self, q: Quad):
-        val = self.mem.get_memval(q.r)
-        self.qidx = q.v if val else self.qidx + 1
+    def gotov(self, l, r, v):
+        self.qidx = v if r else self.qidx + 1
 
-    def gosub(self, q: Quad):
-        self.pjumps.append(q.v)
-        self.qidx = q.r
+    def gosub(self, l, r, v):
+        for pr,pv in self.pfunc[-1]: 
+            print(pv,'=',pr)
+            self.mem.set_memval(pv,pr)
+        self.pfunc.append([])
+        self.pjumps.append(v)
+        self.qidx = r
 
-    def param(self, q: Quad):
-        self.assign(q)
+    def param(self, l, r, v):
+        if not self.pfunc:
+            self.pfunc.append([])
+        self.pfunc[-1].append([r,v])
+        self.qidx += 1
+        #self.assign(l,r,v)
 
-    def verif(self, q: Quad):
-        val = self.mem.get_memval(q.l)
-        if not (q.r <= val < q.v):
+    def verif(self, l, r, v):
+        if not (r <= l < v):
             raise SystemExit('IndexError :: Index out of bounds')
         self.qidx += 1
 
-    def bfunc(self, q: Quad):
-        return self.goto(q)
+    def bfunc(self, l, r, v):
+        return self.goto(l,r,v)
 
-    def endfunc(self, q: Quad):
-        if self.pjumps:
+    def endfunc(self, l, r, v):
+        if len(self.pfunc) > 1:
+            for pr,pv in self.pfunc[-1]: 
+                print(pv,'=',pr)
+                self.mem.set_memval(pv,pr)
+
+        if len(self.pjumps) > 1:
             self.qidx = self.pjumps.pop()
         else:
             self.qidx += 1
 
-    def read(self, q: Quad):
+    def retfunc(self, l, r, v):
+        self.pfunc.pop()
+        if len(self.pfunc) > 2:
+            self.pfunc.pop()
+        self.mem.set_memval(v, r)
+        self.endfunc(l,r,v)
+
+    def read(self, l, r, v):
         r = input('<|')
-        if q.deref:
-            addr = self.mem.get_memval(q.v)
-            self.mem.set_memval(addr, r)
-        else:
-            self.mem.set_memval(q.v, r)
+        self.mem.set_memval(v, r)
         self.qidx += 1
 
-    def write(self, q: Quad):
-        val = self.mem.get_memval(q.v)
-        print(q.deref)
-        if q.deref:
-            val = self.mem.get_memval(val)
-        print(f'|> {val}')
+    def write(self, l, r, v):
+        print(f'|> {v}')
         self.qidx += 1
 
-    def assign(self, q: Quad):
-        val = self.mem.get_memval(q.r)
-        if q.deref:
-            addr = self.mem.get_memval(q.v)
-            self.mem.set_memval(addr, val)
-        else:
-            self.mem.set_memval(q.v, val)
+    def assign(self, l, r, v):
+        self.mem.set_memval(v, r)
         self.qidx += 1

@@ -87,9 +87,10 @@ class Function:
         self.vtab = VarDir()
         self.auxvtab: list[VarDir] = []
         self.params = VarDir() if (not glb) else None
+        self.porder = []
         self.ftype = ftype
         self.returnable = (ftype != Reserved.VOID)
-        self.count = None
+        self.rquidx = []
         self.qaddr = None
 
     @property
@@ -139,9 +140,8 @@ class FuncDir:
             raise NonExistentRow(fid)
         return res
 
-    def add_qc(self, fid, count=None, qaddr=None):
+    def add_qc(self, fid, qaddr=None):
         row = self.get(fid)
-        row.counter = count
         row.qaddr = qaddr
         self.funcdir.update({fid:row})
 

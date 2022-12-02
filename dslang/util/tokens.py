@@ -79,5 +79,6 @@ class ExecTok:
     VERIF = 'verif'
     BFUNC = 'bfunc'
     ENDFUNC = 'endfunc'
+    RETFUNC = 'retfunc'
     REFERENCE = 'reference'
-    RETFUNC = '___f_ret_'
+    FPREFIX = '___f_ret_'

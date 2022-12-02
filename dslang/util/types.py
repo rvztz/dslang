@@ -24,8 +24,6 @@ INT_INT_ASSOC = {
     Symbols.GT:   BOOL,
     Symbols.LTEQ:    BOOL,
     Symbols.LT:   BOOL,
-
-    Symbols.EQ:     INT
 }
 
 INT_FLOAT_ASSOC = {

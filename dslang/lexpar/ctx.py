@@ -2,18 +2,15 @@ from collections import deque
 from dslang.util.dirs import FuncDir, ConstTab
 from dslang.util.scube import SemanticCube
 from dslang.util.tokens import Reserved
-from dslang.vm.mem import MemHandler
+from dslang.vm.mem import MemHandler, Literal, Reference
 
 class Quad:
-    def __init__(self, op, loperand = None, roperand = None, 
-                value = None, deref = None, literal = None) -> None:
+    def __init__(self, op, loperand = None, roperand = None, value = None) -> None:
         self.o = op
         self.l = loperand
         self.r = roperand
         self.v = value
-        self.deref = deref
-        self.literal = literal
-    s = '    '
+
     def __repr__(self) -> str:
         return f'{self.o}{self.padop(self.o,10)}| {self.l}{self.padv(self.l)}| {self.r}{self.padv(self.r)}| {self.v}{self.padv(self.v)}'
 
@@ -23,6 +20,9 @@ class Quad:
     def padv(self, v):
         if not v:
             return "  "
+        if type(v).__name__ != 'int':
+            v = v.v.v if type(v.v).__name__ != 'int' else v.v
+            return " " if v < 10_000 else ""
         return "     " if v < 10_000 else " "
 
 class ExprHelper:
@@ -64,6 +64,7 @@ class ParsingCtx:
     curr_vtype: str = ''
     curr_vid: str = ''
     curr_fid: str = ''
+    curr_pidx: str = ''
     curr_qidx : int = 0
     curr_dim: int = 1
 
@@ -102,8 +103,8 @@ class ParsingCtx:
             return self.egen.curr_operator_st[-1]
         return None
     
-    def add_quad(self, op, l, r, v, deref = None, literal = None):
-        self.quads.append(Quad(op, l, r, v, deref, literal))
+    def add_quad(self, op, l, r, v):
+        self.quads.append(Quad(op, l, r, v))
         self.curr_qidx += 1
 
     def update_quad(self, idx, **kwargs):
@@ -175,14 +176,13 @@ class ParsingCtx:
         if not oper_type:
             raise Exception(f'TypeError :: operation {operator} not allowed between types {loper["ptype"]}-{roper["ptype"]}')
         taddr = self.mem.alloc('temporal',oper_type)
-        self.add_quad(operator, loper['pid'], roper['pid'], taddr)
+        self.add_quad(operator, loper['pid'], roper['pid'], Literal(taddr))
         self.egen.add_operand(taddr, oper_type)
         #self.cleanup_tmem([loper['pid'], roper['pid']])
 
     def gen_print_quads(self):
-        for addr,deref in self.print_items:
-            dref = ['v'] if deref else None
-            self.add_quad(Reserved.PRINT, None, None, addr, dref)
+        for addr in self.print_items:
+            self.add_quad(Reserved.PRINT, None, None, addr)
         self.print_items.clear()
 
     def clean_function_mem(self):

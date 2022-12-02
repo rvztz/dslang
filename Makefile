@@ -2,7 +2,6 @@ export PYTHONPATH:=${PYTHONPATH}:/dslang/
 
 clean:
 	find . -type d -name __pycache__ -exec rm -r {} \+
-	echo ${dlang}
 
 install:
 	python -m venv venv
