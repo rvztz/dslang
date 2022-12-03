@@ -1,7 +1,7 @@
 from collections import deque
 from dslang.util.dirs import FuncDir, ConstTab
 from dslang.util.scube import SemanticCube
-from dslang.util.tokens import Reserved
+from dslang.util.tokens import Reserved, Symbols
 from dslang.vm.mem import MemHandler, Literal, Reference
 
 class Quad:
@@ -18,11 +18,12 @@ class Quad:
         return ''.join([' ' for _ in range(t-len(s))])
     
     def padv(self, v):
-        if not v:
+        if v is None:
             return "  "
-        if type(v).__name__ != 'int':
-            v = v.v.v if type(v.v).__name__ != 'int' else v.v
-            return " " if v < 10_000 else ""
+        if type(v).__name__ == 'Reference':
+            return "*  " if v < 10_000 else "*"
+        if type(v).__name__ == 'Literal':
+            return ".    " if v < 10_000 else "."
         return "     " if v < 10_000 else " "
 
 class ExprHelper:
@@ -39,8 +40,8 @@ class ExprHelper:
     def curr_operator_st(self):
         return self.operator_ctx[-1]
 
-    def add_operand(self, pid, ptype, ref = False):
-        self.curr_operand_st.append(dict(pid=pid, ptype =ptype, ref=ref))
+    def add_operand(self, pid, ptype, pvar = None):
+        self.curr_operand_st.append(dict(pid=pid, ptype =ptype,pvar=pvar))
 
     def create_operand_ctx(self):
         self.operand_ctx.append(deque())
@@ -159,13 +160,13 @@ class ParsingCtx:
 
     def get_var(self, varid):
         if self.curr_pscope == ParsingScope.GLOBAL:
-            glb = self.p_func.vtab.get(varid)
+            glb = self.p_func.vtab.get(varid), 3
             var = glb
         else:
             var = self.curr_func.get_var(varid)
-            glb = self.p_func.vtab.get(varid)
-            var = var or glb
-        if var:
+            glb = self.p_func.vtab.get(varid), 3
+            var = glb if (var[0] is None) else var
+        if var[0]:
             return var
         raise Exception(f'VarID Error :: variable <{varid}> not declared')
 
@@ -189,3 +190,19 @@ class ParsingCtx:
         addresses = self.curr_func.dump_addr()
         for addr in addresses:
             self.mem.dealloc(addr)
+
+    def gen_idxq(self, isref):
+        while len(self.idx_agg) > 1:
+            l,r = self.idx_agg.popleft(), self.idx_agg.popleft()
+            taddr = self.mem.alloc('temporal', Reserved.TINT)
+            self.idx_agg.appendleft(taddr)
+            self.add_quad(Symbols.C_ADD, l, r, Literal(taddr))
+        ref = self.idx_agg.pop()
+        var, _ = self.get_var(self.curr_vid)
+        taddr = self.mem.alloc('temporal', Reserved.TINT)
+        taddr = Reference(taddr) if isref else taddr
+        self.add_quad(Symbols.C_ADD, ref, Literal(var.addr), Literal(taddr))
+        self.egen.add_operand(taddr, Reserved.TINT, self.curr_vid)
+        self.curr_dim = 1
+        self.curr_vid = ''
+        return ref

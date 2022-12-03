@@ -5,17 +5,13 @@ def compute_block_size() -> int:
     disp = int(virtual_memory().available)//(100_000)
     return (disp - (disp%100)) // 20
 
-class Literal:
-    def __init__(self, i) -> None:
-        self.v = i
-    def __repr__(self) -> str:
-        return f'[{self.v}]'
+class Literal(int):
+    def __new__(cls, *args, **kwargs):
+        return super(Literal, cls).__new__(cls, args[0])
 
-class Reference:
-    def __init__(self, i) -> None:
-        self.v = i
-    def __repr__(self) -> str:
-        return f'*{self.v}'
+class Reference(int):
+    def __new__(cls, *args, **kwargs):
+        return super(Reference, cls).__new__(cls, args[0])
 
 class ReadOnlyProperty(Exception):
     def __init__(self) -> None:

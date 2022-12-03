@@ -24,7 +24,7 @@ class NonExistentRow(Exception):
 class Variable:
     def __init__(self, addr: int, vtype: str, limits: list) -> None:
         self.addr = addr
-        self.vtype = vtype            
+        self.vtype = vtype
         self.limits = [] if limits else limits
         self.is_array = True if limits else False
         self.size = 0 if limits else None
@@ -110,13 +110,13 @@ class Function:
     def get_var(self, vid):
         for v in self.auxvtab[::-1]:
             if vid in v.vardir:
-                return v.get(vid)
+                return v.get(vid), 0
         if vid in self.vtab.vardir:
-            return self.vtab.get(vid)
+            return self.vtab.get(vid), 1
         if self.params:
             if vid in self.params.vardir:
-                return self.params.get(vid) 
-        return None
+                return self.params.get(vid), 2
+        return None, -1
 
     def dump_addr(self):
         res = []

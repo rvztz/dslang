@@ -13,6 +13,7 @@ class QuadExecutor:
         Symbols.GT: lambda x,y: x > y,
         Symbols.LTEQ: lambda x,y: x <= y,
         Symbols.GTEQ: lambda x,y: x >= y,
+        Symbols.NOTEQ: lambda x,y: x != y,
         Symbols.EQ: lambda x,y: x == y,
         Symbols.C_ADD: lambda x,y: x + y,
         Symbols.SUB: lambda x,y: x - y,
@@ -21,57 +22,53 @@ class QuadExecutor:
         Symbols.DIV: lambda x,y: x / y
     }
 
-    def __init__(self, mem: MemHandler, quads: Deque[Quad]) -> None:
+    def __init__(self, mem: MemHandler, quads: Deque[Quad], debug: False) -> None:
         self.mem = mem
         self.quads = quads
         self.pjumps = deque()
         self.qidx = 0
+        self.debug = debug
 
     def getmv(self, addr: any) -> any:
-        if type(addr).__name__ == 'int':
-            val = self.mem.get_memval(addr)
-            if type(val).__name__ == 'Reference':
-                return self.mem.get_memval(val.v)
-            return val
-        return self.getmv(addr.v)
+        if (type(addr).__name__ == 'Literal') or (addr is None):
+            return addr
+        if (type(addr).__name__ == 'Reference'):
+            ref = self.mem.get_memval(addr)
+            refval = self.mem.get_memval(ref)
+            while (type(refval).__name__ == 'Reference'): refval = self.mem.get_memval(refval)
+            return refval
+        return self.mem.get_memval(addr)
+        
 
     def getlt(self, val: any) -> any:
-        if val:
-            return val.v
         return val
 
     def getvq(self, q: Quad):
-        ql = self.getmv if type(q.l).__name__ in {'int', 'Reference'} else self.getlt 
-        qr = self.getmv if type(q.r).__name__ in {'int', 'Reference'} else self.getlt
-        qv = self.getmv if type(q.v).__name__ in {'int', 'Reference'} else self.getlt
-        return ql(q.l), qr(q.r), qv(q.v)
+        return self.getmv(q.l), self.getmv(q.r), self.getmv(q.v)
 
     def exec_quads(self):
         while self.qidx < len(self.quads):
             currq = self.quads[self.qidx]
             l,r,v = self.getvq(currq)
-            print(self.qidx, currq)
-            #print(l,r,v)
-            print('----------------')
+            if self.debug:
+                print(f'{self.qidx} :: {currq.o} | {l} | {r} | {v}')
             if currq.o == Symbols.ASGN:
                 self.assign(l,r,v)
             elif op := self.operations.get(currq.o, None):
                 res = op(l, r)
-                if currq.o == Symbols.C_MULT:
-                    print(currq.o, l, r, res)
-                    print('---------------------')
                 self.mem.set_memval(v, res)
                 self.qidx += 1
             elif op := getattr(self, currq.o, None):
                 op(l,r,v)
             else:
-                raise SystemExit('ExecError :: Unsupported op')
+                raise SystemExit('ExecError :: Unsupported op', currq.o)
     
     def goto(self, l, r, v):
         self.qidx = v
 
     def gotof(self, l, r, v):
         if r is None:
+            print(l,r,v)
             raise SystemExit('Undefined.')
         self.qidx = v if (not r) else self.qidx + 1
 
