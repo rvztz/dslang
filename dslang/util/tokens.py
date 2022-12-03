@@ -48,6 +48,7 @@ class Symbols:
     SUB =      r"-"
     MULT =     r"\*"
     DIV =      r"/"
+    FDIV =     r'//'
     EXP =      r"\*\*"
     FCALL =    r"\$"
 

@@ -1,0 +1,44 @@
+program bsearch;
+
+var int: arr[10];
+
+arr[0] = 5;
+arr[1] = 1;
+arr[2] = 4;
+arr[3] = 2;
+arr[4] = 8;
+arr[5] = 3;
+arr[6] = 11;
+arr[7] = 22;
+arr[8] = 6;
+arr[9] = 20;
+
+func void printarr(int size) {
+    i := 0;
+    while (i < size) do {
+        write(arr[i]);
+        i = i+1;
+    } 
+}
+
+func int bsearch(int size, int target) {
+    l := 0;
+    r := size - 1;
+    m := 0;
+    while (l <= r) do {
+        m = (r+l) // 2;
+        if (arr[m] == target) {
+            return m;
+        }
+        if (arr[m] < target) {
+            l = m+1;
+        } else {
+            r = m-1;
+        }
+    }
+    return size+1;
+}
+printarr$(10);
+write('target', '22');
+idx := bsearch$(10, 22);
+write('found at index: ', idx);

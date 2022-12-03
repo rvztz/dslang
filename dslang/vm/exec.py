@@ -19,7 +19,8 @@ class QuadExecutor:
         Symbols.SUB: lambda x,y: x - y,
         Symbols.C_EXP: lambda x,y: x ** y,
         Symbols.C_MULT: lambda x,y: x * y,
-        Symbols.DIV: lambda x,y: x / y
+        Symbols.DIV: lambda x,y: x / y,
+        Symbols.FDIV: lambda x,y: x//y
     }
 
     def __init__(self, mem: MemHandler, quads: Deque[Quad], debug: False) -> None:
@@ -91,7 +92,7 @@ class QuadExecutor:
         return self.goto(l,r,v)
 
     def endfunc(self, l, r, v):
-        if len(self.pjumps) > 1:
+        if len(self.pjumps) >= 1:
             self.qidx = self.pjumps.pop()
         else:
             self.qidx += 1

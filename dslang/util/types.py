@@ -11,6 +11,7 @@ ERROR   = None
 INT_INT_ASSOC = {
     Symbols.C_EXP:  INT,
     Symbols.DIV:  INT,
+    Symbols.FDIV: INT,
     Symbols.C_MULT: INT,
     Symbols.C_ADD:  INT,
     Symbols.SUB:  INT,
@@ -29,6 +30,7 @@ INT_INT_ASSOC = {
 INT_FLOAT_ASSOC = {
     Symbols.C_EXP:  FLOAT,
     Symbols.DIV:  FLOAT,
+    Symbols.FDIV: INT,
     Symbols.C_MULT: FLOAT,
     Symbols.C_ADD:  FLOAT,
     Symbols.SUB:  FLOAT,
@@ -49,6 +51,7 @@ INT_FLOAT_ASSOC = {
 INT_BOOL_ASSOC = {
     Symbols.C_EXP:  ERROR,
     Symbols.DIV:  ERROR,
+    Symbols.FDIV: ERROR,
     Symbols.C_MULT: ERROR,
     Symbols.C_ADD:  ERROR,
     Symbols.SUB:  ERROR,
@@ -70,6 +73,7 @@ INT_BOOL_ASSOC = {
 INT_STR_ASSOC = {
     Symbols.C_EXP:  ERROR,
     Symbols.DIV:  ERROR,
+    Symbols.FDIV: ERROR,
     Symbols.C_MULT: ERROR,
     Symbols.C_ADD:  ERROR,
     Symbols.SUB:  ERROR,
@@ -97,6 +101,7 @@ INT_ASSOC = {INT:INT_INT_ASSOC, FLOAT:INT_FLOAT_ASSOC,
 FLOAT_FLOAT_ASSOC = {
     Symbols.C_EXP:  FLOAT,
     Symbols.DIV:  FLOAT,
+    Symbols.FDIV: INT,
     Symbols.C_MULT: FLOAT,
     Symbols.C_ADD:  FLOAT,
     Symbols.SUB:  FLOAT,
@@ -117,6 +122,7 @@ FLOAT_FLOAT_ASSOC = {
 FLOAT_INT_ASSOC = {
     Symbols.C_EXP:  FLOAT,
     Symbols.DIV:  FLOAT,
+    Symbols.FDIV: INT,
     Symbols.C_MULT: FLOAT,
     Symbols.C_ADD:  FLOAT,
     Symbols.SUB:  FLOAT,
@@ -137,6 +143,7 @@ FLOAT_INT_ASSOC = {
 FLOAT_BOOL_ASSOC = {
     Symbols.C_EXP:  ERROR,
     Symbols.DIV:  ERROR,
+    Symbols.FDIV: ERROR,
     Symbols.C_MULT: ERROR,
     Symbols.C_ADD:  ERROR,
     Symbols.SUB:  ERROR,
@@ -158,6 +165,7 @@ FLOAT_BOOL_ASSOC = {
 FLOAT_STR_ASSOC = {
     Symbols.C_EXP:  ERROR,
     Symbols.DIV:  ERROR,
+    Symbols.FDIV: ERROR,
     Symbols.C_MULT: ERROR,
     Symbols.C_ADD:  ERROR,
     Symbols.SUB:  ERROR,
@@ -184,6 +192,7 @@ FLOAT_ASSOC = {INT:FLOAT_INT_ASSOC, FLOAT:FLOAT_FLOAT_ASSOC,
 STR_STR_ASSOC = {
     Symbols.C_EXP:  ERROR,
     Symbols.DIV:  ERROR,
+    Symbols.FDIV: ERROR,
     Symbols.C_MULT: ERROR,
     Symbols.C_ADD:  STRING,
     Symbols.SUB:  ERROR,
@@ -204,6 +213,7 @@ STR_STR_ASSOC = {
 STR_INT_ASSOC = {
     Symbols.C_EXP:  ERROR,
     Symbols.DIV:  ERROR,
+    Symbols.FDIV: ERROR,
     Symbols.C_MULT: ERROR,
     Symbols.C_ADD:  ERROR,
     Symbols.SUB:  ERROR,
@@ -224,6 +234,7 @@ STR_INT_ASSOC = {
 STR_FLOAT_ASSOC = {
     Symbols.C_EXP:  ERROR,
     Symbols.DIV:  ERROR,
+    Symbols.FDIV: ERROR,
     Symbols.C_MULT: ERROR,
     Symbols.C_ADD:  ERROR,
     Symbols.SUB:  ERROR,
@@ -244,6 +255,7 @@ STR_FLOAT_ASSOC = {
 STR_BOOL_ASSOC = {
     Symbols.C_EXP:  ERROR,
     Symbols.DIV:  ERROR,
+    Symbols.FDIV: ERROR,
     Symbols.C_MULT: ERROR,
     Symbols.C_ADD:  ERROR,
     Symbols.SUB:  ERROR,
@@ -270,6 +282,7 @@ STR_ASSOC = {INT:STR_INT_ASSOC, FLOAT:STR_FLOAT_ASSOC,
 BOOL_BOOL_ASSOC = {
     Symbols.C_EXP:  ERROR,
     Symbols.DIV:  ERROR,
+    Symbols.FDIV: ERROR,
     Symbols.C_MULT: ERROR,
     Symbols.C_ADD:  ERROR,
     Symbols.SUB:  ERROR,
@@ -290,6 +303,7 @@ BOOL_BOOL_ASSOC = {
 BOOL_INT_ASSOC = {
     Symbols.C_EXP:  ERROR,
     Symbols.DIV:  ERROR,
+    Symbols.FDIV: ERROR,
     Symbols.C_MULT: ERROR,
     Symbols.C_ADD:  ERROR,
     Symbols.SUB:  ERROR,
@@ -310,6 +324,7 @@ BOOL_INT_ASSOC = {
 BOOL_FLOAT_ASSOC = {
     Symbols.C_EXP:  ERROR,
     Symbols.DIV:  ERROR,
+    Symbols.FDIV: ERROR,
     Symbols.C_MULT: ERROR,
     Symbols.C_ADD:  ERROR,
     Symbols.SUB:  ERROR,
@@ -330,6 +345,7 @@ BOOL_FLOAT_ASSOC = {
 BOOL_STR_ASSOC = {
     Symbols.C_EXP:  ERROR,
     Symbols.DIV:  ERROR,
+    Symbols.FDIV: ERROR,
     Symbols.C_MULT: ERROR,
     Symbols.C_ADD:  ERROR,
     Symbols.SUB:  ERROR,

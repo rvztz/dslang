@@ -15,7 +15,7 @@ class DSLangLexer(Lexer):
         AND, OR, EQ, NOTEQ, GT, LT,             # Operadores booleanos
         LTEQ, GTEQ,
 
-        SHRT, ASGN, ADD, SUB, MULT, DIV, EXP,                 # Operadores
+        SHRT, ASGN, ADD, SUB, MULT, DIV, EXP, FDIV,            # Operadores
 
         ID, CTEFLT, CTEINT, CTESTR,                     # Identificador y constantes
 
@@ -43,6 +43,8 @@ class DSLangLexer(Lexer):
     SUB     = Symbols.SUB
     EXP     = Symbols.EXP
     MULT    = Symbols.MULT
+    
+    FDIV    = Symbols.FDIV
     DIV     = Symbols.DIV
 
     EQ      = Symbols.EQ

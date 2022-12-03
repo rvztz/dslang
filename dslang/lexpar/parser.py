@@ -13,7 +13,7 @@ class DSLangParser(Parser):
                         str = Reserved.TSTR, bool= Reserved.TBOOL)
     #debugfile = 'dslang.out'
     log = logging.getLogger(__name__)
-    #log.setLevel(logging.CRITICAL)
+    log.setLevel(logging.CRITICAL)
 
     precedence = (
        ('left', ADD, SUB),
@@ -96,10 +96,6 @@ class DSLangParser(Parser):
     def params(self, p):
         return p[-1]
 
-    @_('vtype ID LBRCKT RBRCKT save_param paramsdv')
-    def params(self, p):
-        return p[-1]
-
     @_('COMMA params')
     def paramsdv(self, p):
         return p
@@ -161,7 +157,8 @@ class DSLangParser(Parser):
 
     @_('pexp EXP add_oper emdexp check_emdexp_st',
         'pexp MULT add_oper emdexp check_emdexp_st',
-        'pexp DIV add_oper emdexp check_emdexp_st')
+        'pexp DIV add_oper emdexp check_emdexp_st',
+        'pexp FDIV add_oper emdexp check_emdexp_st')
     def emdexp(self, p):
         return p
 
@@ -399,20 +396,18 @@ class DSLangParser(Parser):
             exp_res = p[-3]
             if exp_res['ptype'] != Reserved.TINT:
                 raise Exception(f'IndexError :: Invalid type for indexing')
-            var, scope = self.ctx.get_var(self.ctx.curr_vid)
+            var, _ = self.ctx.get_var(self.ctx.curr_vid)
             if self.ctx.curr_dim > len(var.limits):
                 raise Exception(f'IndexError :: Invalid indexing for {len(var.limits)}-dimension')
             limits = var.limits[self.ctx.curr_dim-1]
-            ulim = Literal(limits[1]) if scope != 2 else limits[1]
             self.ctx.add_quad(ExecTok.VERIF, exp_res['pid'],    
-                                            Literal(0), ulim)
+                                            Literal(0), Literal(limits[1]))
             if self.ctx.curr_dim == len(var.limits):
                 self.ctx.curr_dim += 1
                 self.ctx.idx_agg.append(exp_res['pid'])
             else:
                 taddr = self.ctx.mem.alloc('temporal', Reserved.TINT)
-                rlim = Literal(limits[2]) if scope != 2 else limits[2]
-                self.ctx.add_quad(Symbols.C_MULT, exp_res['pid'], rlim, Literal(taddr))
+                self.ctx.add_quad(Symbols.C_MULT, exp_res['pid'], Literal(limits[2]), Literal(taddr))
                 self.ctx.curr_dim += 1
                 self.ctx.idx_agg.append(taddr)
         except Exception as e:
@@ -457,7 +452,7 @@ class DSLangParser(Parser):
     @_('')
     def check_emdexp_st(self, p):
         curr_operator = self.ctx.toperator
-        if curr_operator and (curr_operator in {Symbols.C_EXP, Symbols.C_MULT, Symbols.DIV}):
+        if curr_operator and (curr_operator in {Symbols.C_EXP, Symbols.C_MULT, Symbols.DIV, Symbols.FDIV}):
             self.ctx.gen_expr()
 
     @_('')
@@ -621,12 +616,10 @@ class DSLangParser(Parser):
         try:
             if self.ctx.curr_fctx == self.ctx.p_id:
                 raise Exception('SyntaxError :: Param definition outside of function')
-            not_list = (p[-1] != Symbols.C_RBRCKT)
-            varid = p[-1] if not_list else p[-3]
-            vtype = p[-2] if not_list else p[-4]
-            lims = None if not_list else [None, self.ctx.mem.alloc('function', Reserved.TINT), self.ctx.mem.alloc('function', Reserved.TINT)]
+            varid = p[-1]
+            vtype = p[-2]
             addr = self.ctx.mem.alloc('function', vtype)
-            self.ctx.curr_func.params.add(varid,vtype, addr, lims)
+            self.ctx.curr_func.params.add(varid,vtype, addr)
             self.ctx.curr_func.porder.append(varid)
         except Exception as e:
             raise SystemExit('DSLang error => ', e)
@@ -686,15 +679,6 @@ class DSLangParser(Parser):
             if exp_res['ptype'] != param.vtype:
                 raise Exception('TypeError :: Type mismatch for parameters.')
             self.ctx.add_quad(ExecTok.PARAM, None, exp_res['pid'], Literal(param.addr))
-            if param.is_array:
-                if exp_res['pvar'] is None:
-                    raise Exception('TypeError :: Type mismatch for parameters.')   
-                var, _ = self.ctx.get_var(exp_res['pvar'])
-                if not var.is_array:
-                    raise Exception('TypeError :: Parameter called for array-like, passed a variable')   
-                for idx, lim in enumerate(var.limits):
-                    self.ctx.add_quad(ExecTok.PARAM, None, Literal(lim[1]), Literal(param.limits[idx][1]))
-                    self.ctx.add_quad(ExecTok.PARAM, None, Literal(lim[2]), Literal(param.limits[idx][2]))
             self.ctx.curr_pidx += 1
         except Exception as e:
             raise SystemExit('DSLang error => ', e)
