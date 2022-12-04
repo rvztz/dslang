@@ -11,7 +11,7 @@ class DSLangParser(Parser):
     ctx = ParsingCtx()
     ptype_to_token = dict(int=Reserved.TINT, float = Reserved.TFLT, 
                         str = Reserved.TSTR, bool= Reserved.TBOOL)
-    #debugfile = 'dslang.out'
+    debugfile = 'dslang.out'
     log = logging.getLogger(__name__)
     #log.setLevel(logging.CRITICAL)
 
