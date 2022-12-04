@@ -13,4 +13,11 @@ while(k < len_arr) do {
     k = k +1;
 }
 
+mystr := 'hola mundo';
+write(mystr);
+
+var int: xj;
+read(xj);
+write(xj);
+
 write(arr[3][3]);

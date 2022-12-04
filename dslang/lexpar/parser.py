@@ -13,7 +13,7 @@ class DSLangParser(Parser):
                         str = Reserved.TSTR, bool= Reserved.TBOOL)
     #debugfile = 'dslang.out'
     log = logging.getLogger(__name__)
-    log.setLevel(logging.CRITICAL)
+    #log.setLevel(logging.CRITICAL)
 
     precedence = (
        ('left', ADD, SUB),
@@ -227,6 +227,8 @@ class DSLangParser(Parser):
         pass
 
     @_('ID push_printid',
+        'CTEINT push_printct',
+        'CTEFLT push_printct',
         'varidx gen_fidx push_printidl',
         'CTESTR push_printct')
     def printerm(self, p):
