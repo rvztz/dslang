@@ -1,0 +1,8 @@
+# Python-related
+/venv/
+*__pycache__
+.vscode/
+lexpar/__pycache__
+vm/__pycache__
+__pycache__/
+.env

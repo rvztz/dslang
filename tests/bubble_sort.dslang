@@ -1,0 +1,47 @@
+program bubblesort;
+
+var int: arr[5];
+
+arr[0] = 5;
+arr[1] = 1;
+arr[2] = 4;
+arr[3] = 2;
+arr[4] = 8;
+
+
+func void printarr(int size) {
+    i := 0;
+    while (i < size) do {
+        write(arr[i]);
+        i = i+1;
+    } 
+}
+
+func void bubblesort(int size) {
+    i := 0;
+    j := 0;
+    while(i < size) do {
+        j = 0;
+        while (j < ((size - i) - 1)) do {
+            aj := arr[j];
+            ap := arr[j+1];
+            #write(aj, ap);
+            if (aj > ap) {
+                temp := arr[j];
+                arr[j] = arr[j+1];
+                arr[j+1] = temp;
+            }
+
+            j = j+1;
+        }
+
+        i = i + 1;
+    }
+}
+
+write('unsorted');
+printarr$(5);
+write('sorted');
+bubblesort$(5);
+printarr$(5);
+

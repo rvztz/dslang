@@ -1,0 +1,37 @@
+program matmult;
+var int: arr[5], tarr[5];
+
+arr[0] = 5;
+arr[1] = 1;
+arr[2] = 4;
+arr[3] = 2;
+arr[4] = 8;
+
+tarr[0] = 5;
+tarr[1] = 1;
+tarr[2] = 4;
+tarr[3] = 2;
+tarr[4] = 8;
+
+
+func void printarr(int size) {
+    i := 0;
+    while (i < size) do {
+        write(arr[i]);
+        i = i+1;
+    } 
+}
+
+func void vmult(int size) {
+    i := 0;
+    while (i < size) do {
+        arr[i] = arr[i] * tarr[i];
+        i = i + 1;
+    }
+}
+
+write('arr');
+printarr$(5);
+vmult$(5);
+write('after matmult');
+printarr$(5);

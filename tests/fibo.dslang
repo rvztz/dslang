@@ -1,0 +1,23 @@
+program fibo;
+
+func int fibonacci(int n) {
+    a := 0;
+    b := 1;
+    c := 0;
+
+    if (n == 0) {
+        return a;
+    }
+    
+    i := 2;
+    while(i <= n) do {
+        c = a + b;
+        a = b;
+        b = c;
+        i = i + 1; 
+    }
+    return b;
+}
+
+fib := fibonacci$(9);
+write(fib);

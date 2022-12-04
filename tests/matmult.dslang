@@ -1,0 +1,65 @@
+program matmult;
+var int: arr[2][3], tarr[2][3];
+
+arr[0][0] = 4;
+arr[0][1] = 5;
+arr[0][2] = 6;
+arr[1][0] = 7;
+arr[1][1] = 8;
+arr[1][2] = 9;
+
+tarr[0][0] = 4;
+tarr[0][1] = 5;
+tarr[0][2] = 6;
+tarr[1][0] = 7;
+tarr[1][1] = 8;
+tarr[1][2] = 9;
+
+
+func void printarr(int sx, int sy, int t) {
+    i := 0;
+    j := 0;
+    if (t == 1) {
+        while (i < sx) do {
+            j = 0;
+            while (j < sy) do {
+                write(arr[i][j]);
+                j = j + 1;
+            }
+            write('------');
+            i = i + 1;
+        }
+
+    } else {
+        while (i < sx) do {
+            j = 0;
+            while (j < sy) do {
+                write(tarr[i][j]);
+                j = j + 1;
+            }
+            write('------');
+            i = i + 1;
+        }
+    }
+}
+
+func void matmult(int sx, int sy) {
+    i := 0;
+    j := 0;
+    while (i < sx) do {
+            j = 0;
+            while (j < sy) do {
+                arr[i][j] = arr[i][j] * tarr[i][j];
+                j = j + 1;
+            }
+            i = i + 1;
+        }
+}
+
+write('arr');
+printarr$(2,3,1);
+write('tarr');
+printarr$(2,3,2);
+write('after matmult');
+matmult$(2,3);
+printarr$(2,3,1);

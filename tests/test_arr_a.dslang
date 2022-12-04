@@ -1,0 +1,23 @@
+program notest;
+k:= 0;
+len_arr := 4;
+var int: arr[4][4];
+
+while(k < len_arr) do {
+    j := 0;
+    while(j < len_arr) do {
+        z := k*j;
+        arr[k][j] = z;
+        j = j+1;
+    }
+    k = k +1;
+}
+
+mystr := 'hola mundo';
+write(mystr);
+
+var int: xj;
+read(xj);
+write(xj);
+
+write(arr[3][3]);
