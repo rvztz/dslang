@@ -20,7 +20,7 @@ Una vez activado el entorno, para compilar un archivo:
 ```c#
 program my_program;
 ```
-Este identificadorr no puede ser redefinido o declarado otra vez en el código. 
+Este identificador no puede ser redefinido o declarado otra vez en el código. 
 
 **Variables**: Las variables en dslang son *strongly typed*. Al declarar una variable, se debe declarar también el tipo. En el caso de los arreglos, se deben instanciar las dimensiones usando constantes enteras. 
 
@@ -58,5 +58,59 @@ var int: xj;
 read(xj);
 write(xj);
 ```
+
+**Condicionales**
+Los condicionales siguen una forma similar a la de la mayoría de los lenguajes compilados:
+
+```c#
+var int: num;
+read(num);
+if (num == 42) {
+    write('the answer is 42');
+} else {
+    write('not 42');
+}
+```
+
+**Ciclos**
+Se pueden repetir estatutos usando un loop **while**
+```c#
+acum := 0;
+title := 'ingresa un número';
+var float: num;
+while (True) do {
+    write(title);
+    input(num);
+    acum = acum + num;
+    write(acum);
+}
+```
+
+**Funciones**
+El lenguaje permite declarar funciones con los tipos anterior mencionados además de 
+tener tipo **void**. Para declarar una función:
+
+```c#
+func int factorial(int x) {
+    if (x == 0) {
+        return 1;
+    }
+    i := x;
+    fact := 1;
+    while ((x / i) != x) do {
+        fact = fact * i;
+        i = i - 1;
+    }
+    return fact;
+}
+```
+Para llamarla es necesario incluir el símbolo `$`después del nombre de la función:
+```c#
+fact := factorial$(5);
+write(fact);
+```
+
+
+
 
 

@@ -115,8 +115,6 @@ FLOAT_FLOAT_ASSOC = {
     Symbols.GT:   BOOL,
     Symbols.LTEQ:    BOOL,
     Symbols.LT:   BOOL,
-
-    Symbols.EQ:     FLOAT
 }
 
 FLOAT_INT_ASSOC = {
@@ -136,8 +134,6 @@ FLOAT_INT_ASSOC = {
     Symbols.GT:   BOOL,
     Symbols.LTEQ:    BOOL,
     Symbols.LT:   BOOL,
-
-    Symbols.EQ:     FLOAT
 }
 
 FLOAT_BOOL_ASSOC = {
@@ -156,10 +152,7 @@ FLOAT_BOOL_ASSOC = {
     Symbols.GTEQ:    ERROR,
     Symbols.GT:   ERROR,
     Symbols.LTEQ:    ERROR,
-    Symbols.LT:   ERROR,
-
-    Symbols.EQ:     ERROR
-
+    Symbols.LT:   ERROR
 }
 
 FLOAT_STR_ASSOC = {
@@ -178,10 +171,7 @@ FLOAT_STR_ASSOC = {
     Symbols.GTEQ:    ERROR,
     Symbols.GT:   ERROR,
     Symbols.LTEQ:    ERROR,
-    Symbols.LT:   ERROR,
-
-    Symbols.EQ:     ERROR
-
+    Symbols.LT:   ERROR
 }
 
 FLOAT_ASSOC = {INT:FLOAT_INT_ASSOC, FLOAT:FLOAT_FLOAT_ASSOC, 
@@ -205,9 +195,7 @@ STR_STR_ASSOC = {
     Symbols.GTEQ:    ERROR,
     Symbols.GT:   ERROR,
     Symbols.LTEQ:    ERROR,
-    Symbols.LT:   ERROR,
-
-    Symbols.EQ:     STRING
+    Symbols.LT:   ERROR
 }
 
 STR_INT_ASSOC = {
@@ -227,8 +215,6 @@ STR_INT_ASSOC = {
     Symbols.GT:   ERROR,
     Symbols.LTEQ:    ERROR,
     Symbols.LT:   ERROR,
-
-    Symbols.EQ:     ERROR
 }
 
 STR_FLOAT_ASSOC = {
@@ -248,8 +234,6 @@ STR_FLOAT_ASSOC = {
     Symbols.GT:   ERROR,
     Symbols.LTEQ:    ERROR,
     Symbols.LT:   ERROR,
-
-    Symbols.EQ:     ERROR
 }
 
 STR_BOOL_ASSOC = {
@@ -269,8 +253,6 @@ STR_BOOL_ASSOC = {
     Symbols.GT:   ERROR,
     Symbols.LTEQ:    ERROR,
     Symbols.LT:   ERROR,
-
-    Symbols.EQ:     ERROR
 }
 
 STR_ASSOC = {INT:STR_INT_ASSOC, FLOAT:STR_FLOAT_ASSOC, 
@@ -296,8 +278,6 @@ BOOL_BOOL_ASSOC = {
     Symbols.GT:   ERROR,
     Symbols.LTEQ:    ERROR,
     Symbols.LT:   ERROR,
-
-    Symbols.EQ:     BOOL
 }
 
 BOOL_INT_ASSOC = {
@@ -317,8 +297,6 @@ BOOL_INT_ASSOC = {
     Symbols.GT:   ERROR,
     Symbols.LTEQ:    ERROR,
     Symbols.LT:   ERROR,
-
-    Symbols.EQ:     ERROR
 }
 
 BOOL_FLOAT_ASSOC = {
@@ -338,8 +316,6 @@ BOOL_FLOAT_ASSOC = {
     Symbols.GT:   ERROR,
     Symbols.LTEQ:    ERROR,
     Symbols.LT:   ERROR,
-
-    Symbols.EQ:     ERROR
 }
 
 BOOL_STR_ASSOC = {
@@ -359,8 +335,6 @@ BOOL_STR_ASSOC = {
     Symbols.GT:   ERROR,
     Symbols.LTEQ:    ERROR,
     Symbols.LT:   ERROR,
-
-    Symbols.EQ:     ERROR
 }
 
 BOOL_ASSOC = {INT:BOOL_INT_ASSOC, FLOAT:BOOL_FLOAT_ASSOC, 

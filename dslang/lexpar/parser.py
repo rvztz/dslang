@@ -11,9 +11,9 @@ class DSLangParser(Parser):
     ctx = ParsingCtx()
     ptype_to_token = dict(int=Reserved.TINT, float = Reserved.TFLT, 
                         str = Reserved.TSTR, bool= Reserved.TBOOL)
-    debugfile = 'dslang.out'
+    #debugfile = 'dslang.out'
     log = logging.getLogger(__name__)
-    #log.setLevel(logging.CRITICAL)
+    log.setLevel(logging.CRITICAL)
 
     precedence = (
        ('left', ADD, SUB),
@@ -218,7 +218,7 @@ class DSLangParser(Parser):
     def printlist(self, p):
         pass
 
-    @_('COMMA printerm')
+    @_('COMMA printlist')
     def printlistdv(self, p):
         pass
 
@@ -652,7 +652,7 @@ class DSLangParser(Parser):
     def validate_fid(self, p):
         try:
             fid = ExecTok.FPREFIX + p[-3]
-            func = self.ctx.funcdir.get(fid)
+            _ = self.ctx.funcdir.get(fid)
             self.ctx.curr_fid = fid
             self.ctx.curr_pidx = 0
         except Exception as e:

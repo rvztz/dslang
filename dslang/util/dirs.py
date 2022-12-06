@@ -1,16 +1,4 @@
-from collections import UserDict, deque
 from dslang.util.tokens import Reserved
-
-class ReadOnlyProperty(Exception):
-    def __init__(self) -> None:
-        self.msg = 'Re-setting value after instantiation is not allowed'
-        super().__init__(self.msg)
-
-class IncompleteRow(Exception):
-    def __init__(self) -> None:
-        self.msg = 'ID,ADDR or TYPE non-existent'
-        super().__init__(self.msg)
-
 class ExistingRow(Exception):
     def __init__(self, id) -> None:
         self.msg = f'Variable {id} already exists'
@@ -90,7 +78,6 @@ class Function:
         self.porder = []
         self.ftype = ftype
         self.returnable = (ftype != Reserved.VOID)
-        self.rquidx = []
         self.qaddr = None
 
     @property

@@ -81,7 +81,7 @@ Rule 77    read -> READ LPAREN ID RPAREN gen_read
 Rule 78    pprint -> PRINT LPAREN printlist RPAREN gen_print_quads
 Rule 79    printlist -> printerm printlistdv
 Rule 80    printlistdv -> empty
-Rule 81    printlistdv -> COMMA printerm
+Rule 81    printlistdv -> COMMA printlist
 Rule 82    printerm -> CTESTR push_printct
 Rule 83    printerm -> varidx gen_fidx push_printidl
 Rule 84    printerm -> CTEFLT push_printct
@@ -153,8 +153,8 @@ Rule 148   add_curr_pquad -> <empty>
 Unused terminals:
 
     PLOT
-    TO
     FOR
+    TO
     DFRAME
 
 Terminals, with rules where they appear:
@@ -274,8 +274,8 @@ paramsdv             : 28
 pexp                 : 57 58 59 60 61
 pop_oper_ctx         : 66 70 101 103
 pprint               : 37
-printerm             : 79 81
-printlist            : 78
+printerm             : 79
+printlist            : 78 81
 printlistdv          : 79
 progitem             : 1 7
 program              : 0
@@ -2901,7 +2901,7 @@ state 111
 
     (79) printlist -> printerm . printlistdv
     (80) printlistdv -> . empty
-    (81) printlistdv -> . COMMA printerm
+    (81) printlistdv -> . COMMA printlist
     (104) empty -> .
     COMMA           shift and go to state 147
     RPAREN          reduce using rule 104 (empty -> .)
@@ -3875,7 +3875,8 @@ state 146
 
 state 147
 
-    (81) printlistdv -> COMMA . printerm
+    (81) printlistdv -> COMMA . printlist
+    (79) printlist -> . printerm printlistdv
     (82) printerm -> . CTESTR push_printct
     (83) printerm -> . varidx gen_fidx push_printidl
     (84) printerm -> . CTEFLT push_printct
@@ -3887,7 +3888,8 @@ state 147
     CTEINT          shift and go to state 115
     ID              shift and go to state 116
 
-    printerm                       shift and go to state 183
+    printlist                      shift and go to state 183
+    printerm                       shift and go to state 111
     varidx                         shift and go to state 113
 
 state 148
@@ -4818,8 +4820,8 @@ state 182
 
 state 183
 
-    (81) printlistdv -> COMMA printerm .
-    RPAREN          reduce using rule 81 (printlistdv -> COMMA printerm .)
+    (81) printlistdv -> COMMA printlist .
+    RPAREN          reduce using rule 81 (printlistdv -> COMMA printlist .)
 
 
 state 184

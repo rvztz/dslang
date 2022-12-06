@@ -20,7 +20,7 @@ class ReadOnlyProperty(Exception):
     
 class MemHandler:
     #BLOCK_SIZE = compute_block_size()
-    BLOCK_SIZE = 2000
+    BLOCK_SIZE = 1000
     TIDS = {Reserved.TINT:0, Reserved.TFLT:1, Reserved.TSTR:2, Reserved.TBOOL:3}
     SCOPE = {'global':0, 'function':1, 'local':2, 'const':3, 'temporal':4}
     def __init__(self) -> None:

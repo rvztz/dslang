@@ -69,7 +69,6 @@ class QuadExecutor:
 
     def gotof(self, l, r, v):
         if r is None:
-            print(l,r,v)
             raise SystemExit('Undefined.')
         self.qidx = v if (not r) else self.qidx + 1
 
